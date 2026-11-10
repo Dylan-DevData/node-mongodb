@@ -44,8 +44,30 @@ router.get('/get-product/:id',getProduct)
 router.put('/update-product/:id', (req, res) => {
    try {
      const id = req.params.id;
-     const updates = req.body;  
-     
+     const {nom, description, prix} = req.body;
+
+
+     if (!id) {
+       return res.status(400).json({ message: 'id requis' });
+     }
+     const  updates = {};
+     if (nom) updates.nom = nom;
+     if (description) updates.description = description;
+     if (prix) updates.prix = prix;
+     if(Object.keys(updates).length === 0){
+        return res.status(400).json({ message: 'aucune donnée à mettre à jour' });
+     }  
+     const  product =  ProductCollection.findOneAndUpdate(
+        { uid: id },
+        { $set: updates },
+        { new: true, runValidators: true }
+     ); 
+
+     if (!product) {
+       return res.status(404).json({ message: 'aucun produit trouve' });
+     }      
+
+
    } catch (error) {
      console.log(error);
      res.status(500).json({ message: 'Erreur lors de la modification du produit' });    
